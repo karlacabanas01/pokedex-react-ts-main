@@ -154,3 +154,44 @@ input:focus {
     font-size: 0.8em;
   }
 }
+
+.dots {
+  padding: 0.5rem;
+  font-size: 1.2rem;
+  color: #999;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 2rem;
+}
+
+.pageButton,
+.arrowButton {
+  background-color: #f4f4f4;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 0.5rem 0.8rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.pageButton:hover,
+.arrowButton:hover {
+  background-color: #ddd;
+}
+
+.pageButton:disabled,
+.arrowButton:disabled {
+  background-color: #eaeaea;
+  cursor: not-allowed;
+}
+
+.activePage {
+  background-color: #007bff;
+  color: white;
+  border-color: #007bff;
+}

@@ -3,18 +3,20 @@ import { getPokemons } from "../controller/getpokemon";
 import { Pokemon } from "../models/pokemon";
 import { PokemonDetailsModal } from "../components/PokemonDetailsModal/PokemonDetailsModal";
 import styles from "./Listado.module.css";
-
+import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
 const Listado = () => {
   const [pokemons, setPokemons] = useState<Pokemon[]>([]);
   const [query, setQuery] = useState("");
   const [filteredPokemon, setFilteredPokemon] = useState<Pokemon[]>([]);
-
   const [selectedPokemon, setSelectedPokemon] = useState<Pokemon | null>(null);
   const [isOpen, setIsOpen] = useState(false);
 
+  // Paginación
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pokemonsPerPage, setPokemonsPerPage] = useState(10); // Por defecto 10 para pantallas grandes
+
   useEffect(() => {
     const getData = async () => {
-      //Todo async va con un await
       const allPokemons = await getPokemons();
       setPokemons([...allPokemons]);
     };
@@ -22,19 +24,53 @@ const Listado = () => {
   }, []);
 
   useEffect(() => {
-    const filteredPokemon = pokemons?.slice(0, 151).filter((pokemon) => {
-      //vive solo dentro de las llaves
-      return pokemon.name.toLowerCase().match(query.toLowerCase());
-    });
+    const filteredPokemon = pokemons
+      ?.slice(0, 151)
+      .filter((pokemon) =>
+        pokemon.name.toLowerCase().includes(query.toLowerCase())
+      );
     setFilteredPokemon(filteredPokemon);
   }, [query, pokemons]);
 
-  /*
-    Slice devuelve una copia de un array a un nuevo array comenzando por el inicio hasta el fin
-    y con esto el array original  no se modificará.
-    Map es el mapeo de los atributos.
-    En la imagen se le puede por gif, normal o large ya que estan siendo traidas de la API
-*/
+  // Detectar tamaño de pantalla y ajustar el número de Pokémon por página
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) {
+        setPokemonsPerPage(10); // Pantallas grandes
+      } else {
+        setPokemonsPerPage(5); // Pantallas pequeñas
+      }
+    };
+
+    handleResize(); // Llamar inicialmente
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
+  // Cálculo de Pokémon visibles en la página actual
+  const indexOfLastPokemon = currentPage * pokemonsPerPage;
+  const indexOfFirstPokemon = indexOfLastPokemon - pokemonsPerPage;
+  const currentPokemons = filteredPokemon.slice(
+    indexOfFirstPokemon,
+    indexOfLastPokemon
+  );
+
+  // Cambiar página
+  const totalPages = Math.ceil(filteredPokemon.length / pokemonsPerPage);
+
+  const goToPreviousPage = () => {
+    if (currentPage > 1) setCurrentPage(currentPage - 1);
+  };
+
+  const goToNextPage = () => {
+    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+  };
+
+  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
+
   return (
     <>
       <header className={styles.header}>
@@ -64,7 +100,7 @@ const Listado = () => {
       <br />
       <div className={styles.contenedorCard}>
         <div className={styles.contenedorPokemones}>
-          {filteredPokemon?.slice(0, 151).map((pokemon) => (
+          {currentPokemons.map((pokemon) => (
             <div key={pokemon.id} className={styles.card}>
               <div className={styles.textos}>
                 <p>N° {pokemon.id}</p>
@@ -74,12 +110,11 @@ const Listado = () => {
                   className={styles.imgPokemon}
                   src={pokemon.imggif}
                 />
-
                 <div className={styles.buttonWrapper}>
                   <button
                     onClick={() => {
                       setIsOpen(true);
-                      setSelectedPokemon({ ...pokemon }); //Destructurado
+                      setSelectedPokemon({ ...pokemon });
                     }}
                     type="button"
                     className={styles.btn}
@@ -91,7 +126,59 @@ const Listado = () => {
             </div>
           ))}
         </div>
+        <div className={styles.pagination}>
+          <button
+            onClick={goToPreviousPage}
+            disabled={currentPage === 1}
+            className={styles.arrowButton}
+          >
+            <IoIosArrowBack />
+          </button>
+          {currentPage > 3 && (
+            <>
+              <button onClick={() => paginate(1)} className={styles.pageButton}>
+                1
+              </button>
+              {currentPage > 4 && <span className={styles.dots}>...</span>}
+            </>
+          )}
+          {Array.from({ length: 5 }, (_, index) => currentPage - 2 + index)
+            .filter((page) => page >= 1 && page <= totalPages)
+            .map((page) => (
+              <button
+                key={page}
+                onClick={() => paginate(page)}
+                className={`${styles.pageButton} ${
+                  currentPage === page ? styles.activePage : ""
+                }`}
+              >
+                {page}
+              </button>
+            ))}
+          {currentPage < totalPages - 2 && (
+            <>
+              {currentPage < totalPages - 3 && (
+                <span className={styles.dots}>...</span>
+              )}
+              <button
+                onClick={() => paginate(totalPages)}
+                className={styles.pageButton}
+              >
+                {totalPages}
+              </button>
+            </>
+          )}
+          <button
+            onClick={goToNextPage}
+            disabled={currentPage === totalPages}
+            className={styles.arrowButton}
+          >
+            <IoIosArrowForward />
+          </button>
+        </div>
       </div>
+
+      {/* Paginación */}
 
       <PokemonDetailsModal
         isOpen={isOpen}
