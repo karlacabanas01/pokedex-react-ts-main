@@ -71,6 +71,11 @@ const Listado = () => {
 
   const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
+  // Escuchar cambios en 'query' para resetear la paginación
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [query]);
+
   return (
     <>
       <header className={styles.header}>
