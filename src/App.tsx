@@ -4,15 +4,13 @@ import Listado from "./pages/Listado";
 
 function App() {
   return (
-    <div className="App">
-      <Router>
-        <div>
-          <Routes>
-            <Route path="/" element={<Listado />} />
-          </Routes>
-        </div>
-      </Router>
-    </div>
+    <Router>
+      <div>
+        <Routes>
+          <Route path="/" element={<Listado />} />
+        </Routes>
+      </div>
+    </Router>
   );
 }
 

@@ -1,39 +1,35 @@
 import React, { useEffect, useRef } from "react";
 import { CSSTransition } from "react-transition-group";
 import { ReactPortal } from "../ReactPortal";
-import "./Modal.css";
 
 function Modal({ children, isOpen, handleClose }) {
   const nodeRef = useRef(null);
 
   useEffect(() => {
-    const closeOnEscapeKey = (e) => {
-      if (e.key === "Escape") handleClose();
-    };
+    const closeOnEscapeKey = (e) => (e.key === "Escape" ? handleClose() : null);
     document.body.addEventListener("keydown", closeOnEscapeKey);
-    return () => {
-      document.body.removeEventListener("keydown", closeOnEscapeKey);
-    };
+    return () => document.body.removeEventListener("keydown", closeOnEscapeKey);
   }, [handleClose]);
 
   return (
     <ReactPortal wrapperId="react-portal-modal-container">
       <CSSTransition
         in={isOpen}
-        timeout={{ enter: 300, exit: 300 }}
+        timeout={300}
         unmountOnExit
         classNames="modal"
         nodeRef={nodeRef}
       >
-        <div className="modal-overlay">
-          <div className="modal" ref={nodeRef}>
-            <button onClick={handleClose} className="close-btn">
-              <img
-                src="https://img.icons8.com/color/48/000000/close-window.png"
-                alt="Close"
-              />
-            </button>
-            <div className="modal-content">{children}</div>
+        <div
+          className="fixed inset-0 z-[999] flex items-center justify-center bg-black/90 backdrop-blur-md p-4"
+          onClick={handleClose}
+        >
+          <div
+            className="relative bg-transparent" // SIN FONDO, SIN BORDES
+            ref={nodeRef}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {children}
           </div>
         </div>
       </CSSTransition>
